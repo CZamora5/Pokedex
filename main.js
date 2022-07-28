@@ -15,6 +15,7 @@ const $pageNumberText = document.getElementById('info-page-number');
 const $selector = document.getElementById('select');
 const $cards = document.getElementById('cards');
 const $searchInput = document.getElementById('search');
+const $modal = document.getElementById('modal');
 const COLORS = {  
   bug: [141, 155, 32],
   dark: [80, 68, 60],
@@ -37,10 +38,16 @@ const COLORS = {
 };
 const IDS_TO_NAMES = {};
 const NAMES_TO_IDS = {};
+const FAVORITES = JSON.parse(localStorage.getItem('@favorites')) ?? [];
 let currentPage = 1;
 let pokemonsIds = new Array(TOTAL_POKEMONS).fill(0).map((_, index) => index + 1);
 let pages = Math.ceil(pokemonsIds.length / POKEMONS_PER_PAGE);
 let currentSearchString = '';
+
+document.querySelector('.close-modal').addEventListener('click', () => {
+  $modal.close();
+  $modal.querySelector('.modal-img').src = './assets/placeholder.png';
+});
 
 const imgFallback = {};
 for (let i = 1; i <= TOTAL_POKEMONS; i++) {
@@ -122,7 +129,9 @@ function renderPagePromiseAll(page) {
     .then(jsonData => {
       jsonData.forEach(pokemonData => {
         const $div = document.createElement('div');
+        const $container = document.createElement('div');
         $div.classList.add('card');
+        $container.classList.add('card-container');
         $div.style.backgroundColor = assignColor(pokemonData.types);
         const $img = document.createElement('img');
         $img.src = pokemonData['sprites']['other']['official-artwork']['front_default'];
@@ -130,16 +139,71 @@ function renderPagePromiseAll(page) {
           this.onerror = null; 
           this.src = imgFallback[pokemonData.id];
         }
+
+        $pokemonInfo = document.createElement('div');
         $p = document.createElement('p');
         $p2 = document.createElement('p');
         $p.innerText = pokemonData.name;
         $p2.innerText = `ID: ${pokemonData.id}`;
         $div.appendChild($img);
-        $div.appendChild($p);
-        $div.appendChild($p2);
-        $cards.appendChild($div);
+        $pokemonInfo.appendChild($p);
+        $pokemonInfo.appendChild($p2);
+        
+        displayTypes($container, pokemonData.types);
+
+        $star = document.createElement('div');
+        $star.classList.add('star');
+        handleFavorites($star, $div, pokemonData);
+
+        $cardBody = document.createElement('div');
+        $cardBody.classList.add('card-body');
+        $cardBody.appendChild($pokemonInfo);
+        $cardBody.appendChild($star);
+
+        $div.appendChild($cardBody);
+        $container.appendChild($div);
+        $cards.appendChild($container);
+
+        $container.addEventListener('click', () => {
+          $modal.querySelector('.modal-img').src = imgFallback[pokemonData.id];
+          $modal.querySelector('.name').innerText = pokemonData.name;
+          $modal.showModal();
+          let width = Number(window.getComputedStyle($modal.querySelector('.stat')).getPropertyValue('width'));
+        });
       });
     });
+}
+
+function displayTypes($elem, types) {
+  let $firstType = document.createElement('img');
+  $firstType.classList.add('first-type');
+  $firstType.src = `./assets/${types[0].type.name}_type.png`;
+  $elem.appendChild($firstType);
+  
+  if (types.length === 2) {
+    let $secondType = document.createElement('img');
+    $secondType.classList.add('second-type');
+    $secondType.src = `./assets/${types[1].type.name}_type.png`;
+    $elem.appendChild($secondType);
+  } 
+}
+
+function handleFavorites($elem, $card, pokemonData) {
+  if (FAVORITES.includes(pokemonData.id)) {
+    $card.classList.add('favorite');
+  }
+
+  $elem.addEventListener('click', () => {
+    if ($card.classList.contains('favorite')) {
+      $card.classList.remove('favorite');
+      FAVORITES.splice(FAVORITES.indexOf(pokemonData.id), 1);
+      localStorage.setItem('@favorites', JSON.stringify(FAVORITES));
+    } else {
+      $card.classList.add('favorite');
+      FAVORITES.push(pokemonData.id);
+      localStorage.setItem('@favorites', JSON.stringify(FAVORITES));
+    }
+  });
 }
 
 function getIds(pokemons) {
@@ -162,28 +226,36 @@ $previousButton.addEventListener('click', () => {
 
 $selector.addEventListener('change', evt => {
   const type = evt.target.value;
+  filterPokemons(type, currentSearchString);
+});
+
+$searchInput.addEventListener('keypress', evt => {
+  if (evt.key === 'Enter') {
+    currentSearchString = evt.target.value.trim().toLowerCase();
+    let currentType = $selector.value;
+    filterPokemons(currentType, currentSearchString);
+    // let names = Object.keys(NAMES_TO_IDS).sort((a, b) => NAMES_TO_IDS[a] - NAMES_TO_IDS[b]);
+    // pokemonsIds = names.filter(name => name.includes(currentSearchString)).map(name => NAMES_TO_IDS[name]);
+    
+  }
+});
+
+function filterPokemons(type, searchString) {
   if (type === 'all') {
     pokemonsIds = new Array(TOTAL_POKEMONS).fill(0).map((_, index) => index + 1);
+    pokemonsIds = pokemonsIds.filter(id => IDS_TO_NAMES[id].includes(searchString));
     resetContent();
   } else {
     fetch(`https://pokeapi.co/api/v2/type/${type}`)
       .then(response => response.json())
       .then(data => {
         pokemonsIds = getIds(data.pokemon);
+        pokemonsIds = pokemonsIds.filter(id => IDS_TO_NAMES[id].includes(searchString));
         resetContent();
       })
       .catch(err => console.error(err));
   }
-});
-
-$searchInput.addEventListener('keypress', evt => {
-  if (evt.key === 'Enter') {
-    let searchString = evt.target.value.trim().toLowerCase();
-    let names = Object.keys(NAMES_TO_IDS).sort((a, b) => NAMES_TO_IDS[a] - NAMES_TO_IDS[b]);
-    pokemonsIds = names.filter(name => name.includes(searchString)).map(name => NAMES_TO_IDS[name]);
-    resetContent();
-  }
-});
+}
 
 function resetContent() {
   $cards.innerHTML = '';
@@ -205,7 +277,4 @@ renderPagePromiseAll(currentPage);
 //     })
 //     .catch(err => console.error(err));
 // }
-
-
-
 
