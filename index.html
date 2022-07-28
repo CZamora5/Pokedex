@@ -4,49 +4,90 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
   <title>Pokedex</title>
 </head>
 <body>
-  <select id="select">
-    <option value="all" selected>All types</option>
-    <option value=bug>Bug</option>
-    <option value=dark>Dark</option>
-    <option value=dragon>Dragon</option>
-    <option value=electric>Electric</option>
-    <option value=fairy>Fairy</option>
-    <option value=fighting>Fighting</option>
-    <option value=fire>Fire</option>
-    <option value=flying>Flying</option>
-    <option value=ghost>Ghost</option>
-    <option value=grass>Grass</option>
-    <option value=ground>Ground</option>
-    <option value=ice>Ice</option>
-    <option value=normal>Normal</option>
-    <option value=poison>Poison</option>
-    <option value=psychic>Psychic</option>
-    <option value=rock>Rock</option>
-    <option value=steel>Steel</option>
-    <option value=water>Water</option>
-  </select>
-  <input type="text" placeholder="Type a pokemon's name" id="search">
-  <button id="previous">Previous page</button>
-  <button id="next">Next page</button>
-  <span id="info-page-number"></span>
-  <div id="cards"></div>
-  <dialog id="modal">
+  <header class="navbar">
+    <div class="container">
+      <img src="./assets/logo_movil.png" height="48px" alt="pokemon logo">
+      <select id="select">
+        <option value="all" selected>All types</option>
+        <option value=bug>Bug</option>
+        <option value=dark>Dark</option>
+        <option value=dragon>Dragon</option>
+        <option value=electric>Electric</option>
+        <option value=fairy>Fairy</option>
+        <option value=fighting>Fighting</option>
+        <option value=fire>Fire</option>
+        <option value=flying>Flying</option>
+        <option value=ghost>Ghost</option>
+        <option value=grass>Grass</option>
+        <option value=ground>Ground</option>
+        <option value=ice>Ice</option>
+        <option value=normal>Normal</option>
+        <option value=poison>Poison</option>
+        <option value=psychic>Psychic</option>
+        <option value=rock>Rock</option>
+        <option value=steel>Steel</option>
+        <option value=water>Water</option>
+      </select>
+      <input type="text" placeholder="Type a pokemon's name" id="search">
+    </div>
+  </header>
+  <div class="container">
+    <div class="controls">
+      <div id="previous">
+      </div>
+      <div id="next">
+      </div>
+      <!-- <button id="previous">Previous page</button>
+      <button id="next">Next page</button> -->
+      <span id="info-page-number"></span>
+    </div>
+  </div>
+  <div class="container">
+    <div id="cards">
+      <div class="empty none">No results found</div>
+    </div>
+  </div>
+  <dialog id="modal" class="none">
     <i class="close-modal"></i>
     <img class="modal-img">
     <section class="content">
-      <div class="types"></div>
       <div class="name"></div>
+      <div class="pheno">
+        <div>Weight: </div>
+        <div>Height: </div>
+      </div>
       <div class="stats">
-        <div class="stat hp-stat"></div>
+        <div class="stat-bar">
+          <span>HP:</span><progress class="stat" value="60" max="300">60%</progress>
+        </div>
+        <div class="stat-bar">
+          <span>Attack:</span><progress class="stat" value="60" max="300">60%</progress>
+        </div>
+        <div class="stat-bar">
+          <span>Defense:</span><progress class="stat" value="60" max="300">60%</progress>
+        </div>
+        <div class="stat-bar">
+          <span>Sp. Atk:</span><progress class="stat" value="60" max="300">60%</progress>
+        </div>
+        <div class="stat-bar">
+          <span>Sp. Def:</span><progress class="stat" value="60" max="300">60%</progress>
+        </div>
+        <div class="stat-bar">
+          <span>Speed:</span><progress class="stat" value="60" max="300">60%</progress>
+        </div>
+        <!-- <div class="stat hp-stat"></div>
         <div class="stat attack-stat"></div>
         <div class="stat defense-stat"></div>
         <div class="stat special-attack-stat"></div>
         <div class="stat special-defense-stat"></div>
-        <div class="stat speed-stat"></div>
+        <div class="stat speed-stat"></div> -->
       </div>
     </section>
   </dialog>
