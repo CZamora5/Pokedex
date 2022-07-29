@@ -1,12 +1,3 @@
-// fetch('https://ghibliapi.herokuapp.com/films')
-//   .then(response => response.json())
-//   .then(data => renderData(data))
-//   .catch(err => console.error(err));
-
-  // fetch('https://api.jikan.moe/v4/anime')
-//   .then(response => response.json())
-//   .then(data => console.log(data))
-//   .catch(err => console.error(err));
 const TOTAL_POKEMONS = 898;
 const POKEMONS_PER_PAGE = 20;
 const $nextButton = document.getElementById('next');
@@ -16,6 +7,10 @@ const $selector = document.getElementById('select');
 const $cards = document.getElementById('cards');
 const $searchInput = document.getElementById('search');
 const $modal = document.getElementById('modal');
+const $favorites = document.querySelector('.favorites');
+const $ascending = document.querySelector('.ascending');
+const $msg = document.querySelector('.empty');
+
 const COLORS = {  
   bug: [141, 155, 32],
   dark: [80, 68, 60],
@@ -56,6 +51,16 @@ for (let i = 1; i <= TOTAL_POKEMONS; i++) {
   imgFallback[i] = `https://assets.pokemon.com/assets/cms2/img/pokedex/detail/${index}.png`;
 }
 
+$favorites.addEventListener('click', () => {
+  pokemonsIds = FAVORITES;
+  resetContent();
+});
+
+$ascending.addEventListener('click', () => {
+  pokemonsIds.sort((a, b) => IDS_TO_NAMES[a] !== IDS_TO_NAMES[b] ? IDS_TO_NAMES[a] < IDS_TO_NAMES[b] ? -1 : 1 : 0);
+  resetContent();
+});
+
 (function getNames() {
   let reqs = [], resultsPerPage = 256;
   for(let i = 0; i < Math.ceil(TOTAL_POKEMONS / resultsPerPage); i++) {
@@ -83,7 +88,6 @@ function assignColor(types) {
     return `rgb(${typeColor[0]}, ${typeColor[1]}, ${typeColor[2]})`;
   }
   let color = types.reduce((acc, type) => {
-    // console.log(type.type.name);
     typeColor = COLORS[type.type.name];
     acc[0] += typeColor[0];
     acc[1] += typeColor[1];
@@ -94,34 +98,15 @@ function assignColor(types) {
   return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
 }
 
-function renderPage(page) {
-  for(let i = POKEMONS_PER_PAGE * (page - 1); i < Math.min(POKEMONS_PER_PAGE * page, pokemonsIds.length); i++) {
-    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonsIds[i]}`)
-      .then(response => response.json())
-      .then(pokemonData => {
-          const $div = document.createElement('div');
-          $div.classList.add('card');
-          $div.style.backgroundColor = assignColor(pokemonData.types);
-          const $img = document.createElement('img');
-          $img.src = pokemonData['sprites']['other']['official-artwork']['front_default'];
-          $img.onerror = function handleError() {
-            this.onerror = null; 
-            this.src = imgFallback[pokemonData.id];
-          }
-          $p = document.createElement('p');
-          $p.innerText = pokemonData.name;
-          $div.appendChild($img);
-          $div.appendChild($p);
-          $cards.appendChild($div);
-      })
-      .catch(err => console.error(err));
-  }
-}
-const $msg = document.querySelector('.empty');
-
 function renderPagePromiseAll(page) {
   if (pokemonsIds.length === 0) {
     $msg.classList.remove('none');
+    const $div = document.createElement('div');
+    $div.classList.add('card');
+    const $img = document.createElement('img');
+    $img.src = './assets/placeholder.png';
+    $div.appendChild($img);
+    $cards.appendChild($div);
   } else {
     $msg.classList.add('none');
   }
@@ -175,7 +160,6 @@ function renderPagePromiseAll(page) {
 
         $container.addEventListener('click', evt => {
           if (!evt.target.classList.contains('star')) {
-            // console.log('open');
             $modal.querySelector('.modal-img').src = imgFallback[pokemonData.id];
             $modal.querySelector('.name').innerText = pokemonData.name;
             const stats = $modal.querySelectorAll('.stat');
@@ -183,7 +167,6 @@ function renderPagePromiseAll(page) {
 
             const divs = document.querySelector('.pheno').querySelectorAll('div');
             divs[0].innerText = `Weight: ${pokemonData.weight/10} kg`;
-            // console.log(pokemonData.weight, pokemonData.height);
             divs[1].innerText = `Height: ${pokemonData.height/10} m`;
 
             stats.forEach((stat, index) => {
@@ -226,6 +209,7 @@ function handleFavorites($elem, $card, pokemonData) {
     } else {
       $card.classList.add('favorite');
       FAVORITES.push(pokemonData.id);
+      FAVORITES.sort((a, b) => a- b);
       localStorage.setItem('@favorites', JSON.stringify(FAVORITES));
     }
   });
@@ -236,17 +220,15 @@ function getIds(pokemons) {
 }
 
 $nextButton.addEventListener('click', () => {
-  if (currentPage === pages) return;
+  if (currentPage >= pages) return;
   $cards.innerHTML = '';
   renderPagePromiseAll(++currentPage);
-  // console.log(currentPage);
 });
 
 $previousButton.addEventListener('click', () => {
   if (currentPage === 1) return;
   $cards.innerHTML = '';
   renderPagePromiseAll(--currentPage);
-  // console.log(currentPage);
 });
 
 $selector.addEventListener('change', evt => {
@@ -258,10 +240,7 @@ $searchInput.addEventListener('keypress', evt => {
   if (evt.key === 'Enter') {
     currentSearchString = evt.target.value.trim().toLowerCase();
     let currentType = $selector.value;
-    filterPokemons(currentType, currentSearchString);
-    // let names = Object.keys(NAMES_TO_IDS).sort((a, b) => NAMES_TO_IDS[a] - NAMES_TO_IDS[b]);
-    // pokemonsIds = names.filter(name => name.includes(currentSearchString)).map(name => NAMES_TO_IDS[name]);
-    
+    filterPokemons(currentType, currentSearchString);    
   }
 });
 
@@ -291,16 +270,3 @@ function resetContent() {
 }
 
 renderPagePromiseAll(currentPage);
-
-// let types = {1: 0, 2: 0};
-
-// for(let i = 1; i <= TOTAL_POKEMONS; i++) {
-//   fetch(`https://pokeapi.co/api/v2/pokemon/${i}`)
-//     .then(response => response.json())
-//     .then(pokemonData => {
-//       types[pokemonData.types.length]++;
-//       console.log(types);
-//     })
-//     .catch(err => console.error(err));
-// }
-

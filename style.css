@@ -48,6 +48,12 @@ body {
   align-items: center;
 }
 
+.navbar span {
+  color: white;
+  margin-left: 1rem;
+  font-size: 0.8rem;
+}
+
 .navbar > .container {
   display: flex;
   align-items: center;
@@ -123,6 +129,7 @@ img.second-type {
 .card-body > .star {
   width: 40px;
   height: 40px;
+  cursor: pointer;
   justify-content: end;
   transition: transform 200ms;
 }
@@ -186,14 +193,16 @@ div.controls > div{
 }
 
 #previous:hover {
-  border-left: 6px solid #727b94;
-  border-top: 6px solid #727b94;
+  border-left: 6px solid #F9E078;
+  border-top: 6px solid #F9E078;
   animation: expand2 300ms infinite linear;
 }
 
 #next:hover {
-  border-left: 6px solid #727b94;
-  border-top: 6px solid #727b94;
+  /* border-left: 6px solid #727b94;
+  border-top: 6px solid #727b94; */
+  border-left: 6px solid #F9E078;
+  border-top: 6px solid #F9E078;
   animation: expand2 300ms infinite linear;
 }
 
