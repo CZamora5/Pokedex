@@ -10,6 +10,7 @@ const $modal = document.getElementById('modal');
 const $favorites = document.querySelector('.favorites');
 const $ascending = document.querySelector('.ascending');
 const $msg = document.querySelector('.empty');
+const $searchButton = document.querySelector('.search-btn');
 
 const COLORS = {  
   bug: [141, 155, 32],
@@ -121,9 +122,13 @@ function renderPagePromiseAll(page) {
     .then(jsonData => {
       jsonData.forEach(pokemonData => {
         const $div = document.createElement('div');
+        const $fullCard = document.createElement('div');
         const $container = document.createElement('div');
+        const $lowerContainer = document.createElement('div');
         $div.classList.add('card');
+        $fullCard.classList.add('full-card');
         $container.classList.add('card-container');
+        $lowerContainer.classList.add('card-container');
         $div.style.backgroundColor = assignColor(pokemonData.types);
         $container.style.backgroundColor = assignColor(pokemonData.types);
         const $img = document.createElement('img');
@@ -142,21 +147,27 @@ function renderPagePromiseAll(page) {
         $pokemonInfo.appendChild($p);
         $pokemonInfo.appendChild($p2);
         
-        displayTypes($container, pokemonData.types);
+        displayTypes($fullCard, pokemonData.types);
 
         $star = document.createElement('img');
         $star.classList.add('star');
-        $star.src = './assets/star_icon.png';
-        handleFavorites($star, $container, pokemonData);
+        $star.src = './assets/star.svg';
 
         $cardBody = document.createElement('div');
         $cardBody.classList.add('card-body');
         $cardBody.appendChild($pokemonInfo);
         $cardBody.appendChild($star);
+        $lowerContainer.appendChild($cardBody);
+        
 
-        $div.appendChild($cardBody);
+        $fullCard.appendChild($container);
+        $fullCard.appendChild($lowerContainer);
+        handleFavorites($star, $container, $lowerContainer, pokemonData);
+
+
+        // $div.appendChild($cardBody);
         $container.appendChild($div);
-        $cards.appendChild($container);
+        $cards.appendChild($fullCard);
 
         $container.addEventListener('click', evt => {
           if (!evt.target.classList.contains('star')) {
@@ -196,18 +207,27 @@ function displayTypes($elem, types) {
   } 
 }
 
-function handleFavorites($elem, $card, pokemonData) {
+function handleFavorites($elem, $card, $card2, pokemonData) {
   if (FAVORITES.includes(pokemonData.id)) {
     $card.classList.add('favorite');
+    $card2.classList.add('favorite');
+    $card.parentElement.classList.add('favorite');
+    $elem.src = './assets/star2.svg';
   }
 
   $elem.addEventListener('click', () => {
     if ($card.classList.contains('favorite')) {
+      $elem.src = './assets/star.svg';
+      $card.parentElement.classList.remove('favorite');
       $card.classList.remove('favorite');
+      $card2.classList.remove('favorite');
       FAVORITES.splice(FAVORITES.indexOf(pokemonData.id), 1);
       localStorage.setItem('@favorites', JSON.stringify(FAVORITES));
     } else {
+      $elem.src = './assets/star2.svg';
+      $card.parentElement.classList.add('favorite');
       $card.classList.add('favorite');
+      $card2.classList.add('favorite');
       FAVORITES.push(pokemonData.id);
       FAVORITES.sort((a, b) => a- b);
       localStorage.setItem('@favorites', JSON.stringify(FAVORITES));
@@ -234,6 +254,12 @@ $previousButton.addEventListener('click', () => {
 $selector.addEventListener('change', evt => {
   const type = evt.target.value;
   filterPokemons(type, currentSearchString);
+});
+
+$searchButton.addEventListener('click', () => {
+    let currentSearchString = $searchInput.value.trim().toLowerCase();
+    let currentType = $selector.value;
+    filterPokemons(currentType, currentSearchString);  
 });
 
 $searchInput.addEventListener('keypress', evt => {
